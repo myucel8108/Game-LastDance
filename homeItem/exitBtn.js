@@ -28,6 +28,23 @@ export default class ExitBtn {
         this.inx1 = this.indx + this.indw / 2;
         this.iny1 = this.indy + this.indh / 2;
 
+        //불꽃 이미지
+        this.imgSpark = document.querySelector("#spark");
+        this.spsw = this.imgSpark.width / 6;
+        this.spsh = this.imgSpark.height /2;
+        this.idx = 0;
+        this.spsx = this.idx * this.spsw;
+        // this.imgSpark.height / 2;
+        this.spsy = 0;
+        this.spdx = this.indx -70;
+        this.spdy = this.indy -130;
+        // this.spdx = 0;
+        // this.spdy = 0;
+        this.spsize = 1;
+        this.spdh = this.spsw * 2;
+        this.spdw = this.spsh  ;
+        // this.sparkdelay = 2;
+
         //콜백 함수
         this.exitClicked = null;
 
@@ -41,6 +58,13 @@ export default class ExitBtn {
         if(this.degree2==60)
             this.degree2=0;
         this.degree2-=0.01;
+
+        // this.sparkdelay --;
+        // if(this.sparkdelay == 0) {
+        this.idx = (this.idx +1)%6;
+        this.spsx = this.idx * this.spsw;
+        // this.sparkdelay = 2;
+        // }
     
     }
 
@@ -58,7 +82,10 @@ export default class ExitBtn {
         ctx.rotate(this.degree2);
         ctx.translate(-this.inx1,-this.iny1);
         ctx.drawImage(this.imgInner, this.indx, this.indy, this.indw, this.indh);
+        ctx.drawImage(this.imgSpark, this.spsx, this.spsy, this.spsw, this.spsh,
+            this.spdx, this.spdy,  this.spdw,this.spdh );
         ctx.restore();
+
         
     }
 

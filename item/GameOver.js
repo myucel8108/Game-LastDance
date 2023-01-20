@@ -1,3 +1,5 @@
+import newlec from "../newlec.js";
+
 export default class Gameover {
   constructor() {
     //gameover UI 동작
@@ -26,7 +28,7 @@ export default class Gameover {
       width: 200,
       height: 100,
       label: "YES",
-      btnfillStyle: "Yellow",
+      btnfillStyle: "black",
     };
     //no 버튼
     this.btnNo = {
@@ -35,7 +37,7 @@ export default class Gameover {
       width: 200,
       height: 100,
       label: "N O",
-      btnfillStyle: "Yellow",
+      btnfillStyle: "black",
     };
 
     this.onClickedYes = null; //Yes가 눌렸을 때, gamecanvas에 알려준다 (app에 알려주기 위해)
@@ -43,6 +45,7 @@ export default class Gameover {
   }
 
   draw(ctx) {
+    newlec.sound.endGameSound.play();
     ctx.drawImage(this.gameoverImg, 400, 100);
     let a = this.continueImage;
     for (let i = 0; i < a.indexX.length; i++) {
@@ -63,9 +66,6 @@ export default class Gameover {
     for (let btn of btns) {
       let { x, y, width: w, height: h, label, btnfillStyle } = btn;
       ctx.fillStyle = btnfillStyle;
-      ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = "black";
-      ctx.strokeRect(x, y, w, h);
       ctx.font = "bold 60px serif";
       ctx.fillText(label, x + w / 5, y + h / 1.5);
     }
@@ -97,7 +97,11 @@ export default class Gameover {
       ydir > 0
     ) {
       //Yes Btn 눌렀을 때
-      if (this.onClickedYes) this.onClickedYes();
+      if (this.onClickedYes){
+        this.onClickedYes();
+        newlec.sound.endGameSound.pause();
+        newlec.sound.onGameSound.currentTime = 0;;
+      } 
     }
   }
   notifyClcikedNoBtn(x, y) {
@@ -110,7 +114,13 @@ export default class Gameover {
       ydir > 0
     ) {
       //No Btn 눌렀을 때
-      if (this.onClickedNo) this.onClickedNo();
+      if (this.onClickedNo){
+        this.onClickedNo();
+        newlec.sound.endGameSound.pause();
+        newlec.sound.onGameSound.currentTime = 0;;
+        newlec.sound.isHomeSound = true;
+
+      } 
     }
   }
 
@@ -127,9 +137,9 @@ export default class Gameover {
       Noydir < this.btnNo.height &&
       Noydir > 0
     ) {
-      this.btnNo.btnfillStyle = "orange";
+      this.btnNo.btnfillStyle = "white";
     } else {
-      this.btnNo.btnfillStyle = "Yellow";
+      this.btnNo.btnfillStyle = "black";
     }
 
     if (
@@ -138,9 +148,9 @@ export default class Gameover {
       Yesydir < this.btnYes.height &&
       Yesydir > 0
     ) {
-      this.btnYes.btnfillStyle = "orange";
+      this.btnYes.btnfillStyle = "white";
     } else {
-      this.btnYes.btnfillStyle = "Yellow";
+      this.btnYes.btnfillStyle = "black";
     }
   }
 }

@@ -3,6 +3,7 @@ import StartButton from "../homeItem/startBtn.js";
 import ExitButton from "../homeItem/exitBtn.js";
 import SettingButton from "../homeItem/settingBtn.js";
 import Elements from "../homeItem/elements.js";
+import newlec from "../newlec.js";
 
 export default class HomeCanvas {
   constructor() {
@@ -30,7 +31,7 @@ export default class HomeCanvas {
     this.elemetns = new Elements();
 
     //프레임
-    this.frame = 1000 / 60; // 1초에 60프레임
+    this.frame = 1000 /120; // 1초에 60프레임
 
     //전역객체 -- 우선 스킵
 
@@ -44,6 +45,10 @@ export default class HomeCanvas {
     this.onstartGame = null;
     this.onExit = null;
     this.onSetting = null;
+
+    this.dom.ontouchend = this.touchendHandler.bind(this);
+    this.dom.ontouchmove = this.touchmoveHandler.bind(this);
+    this.dom.ontouchstart = this.touchstartHandler.bind(this);
   }
 
   run() {
@@ -56,6 +61,11 @@ export default class HomeCanvas {
   }
 
   draw() {
+    newlec.sound.homeSound.pause()
+    if(newlec.sound.isHomeSound)
+    newlec.sound.homeSound.muted = true;
+    newlec.sound.homeSound.play();
+    newlec.sound.homeSound.muted = false;
     this.background.draw(this.ctx);
     this.startBtn.draw(this.ctx);
     this.exitBtn.draw(this.ctx);
@@ -63,10 +73,12 @@ export default class HomeCanvas {
     this.elemetns.draw(this.ctx);
   }
 
-  update(){
+  update() {
+    this.elemetns.update();
     this.startBtn.update();
     this.settingBtn.update();
     this.exitBtn.update();
+    newlec.sound.update();
   }
   //칼 생성기 이벤트
   renderKnife() {
@@ -85,18 +97,17 @@ export default class HomeCanvas {
     }
   }
 
-
   //이벤트
   clickHandler(e) {
-
+    //클릭 발생시 btn들한테 notify (너가 클릭된거니?)
+    // console.log("클릭");
+ 
   }
 
   //이벤트 핸들러
   startBtnClickedHandler() {
-      if (this.onstartGame != null) {
-
-          this.onstartGame(); 
-      }
+    newlec.sound.isHomeSound = false;
+    if (this.onstartGame != null){} this.onstartGame();
   }
 
   exitBtnClickedHandler() {
@@ -105,10 +116,50 @@ export default class HomeCanvas {
 
   settingBtnClickedHandler() {
     setTimeout(() => {
-    if (this.onSetting != null) this.onSetting();
+      if (this.onSetting != null) this.onSetting();
     },2000);
   }
 
+
+  touchstartHandler(e) {
+    //마우스 클릭 확인
+    this.prevMouseX = this.knifex;
+    this.prevMouseY = this.knifey;
+    this.knifex =  e.touches[0].clientX - e.target.offsetLeft;
+    this.knifey=e.touches[0].clientY - e.target.offsetTop + document.documentElement.scrollTop;
+    this.slicingFruit = true;
+    console.log("터치가 되었다")
+  }
+  touchendHandler(e) {
+    //마우스 업 확인
+    this.prevMouseX = 0;
+    this.prevMouseY = 0;
+    this.knifes = [];
+    this.slicingFruit = false;
+  }
+
+  touchmoveHandler(e) {
+    //마우스가 클릭 됐을 때 동작 할 부분
+    if (this.slicingFruit) {
+      this.prevMouseX = this.knifex;
+      this.prevMouseY = this.knifey;
+      this.knifex =  e.touches[0].clientX - e.target.offsetLeft;
+      this.knifey=e.touches[0].clientY - e.target.offsetTop + document.documentElement.scrollTop;
+      this.startBtn.notifyClick(this.knifex, this.knifey);
+      this.settingBtn.notifyClick(this.knifex, this.knifey);
+      this.exitBtn.notifyClick(this.knifex, this.knifey);
+      this.knifes.push({
+        x: this.knifex,
+        y: this.knifey,
+        prevMouseX: this.prevMouseX,
+        prevMouseY: this.prevMouseY,
+      });
+      // for (let fruit of this.fruits) {
+      //   //마우스가 클릭됐다!! 라는것을 과일||폭탄에 알려줘야함
+      //   fruit.notifyMouseMove(e.x, e.y); //마우스의 x y값을 전달해 줌
+      // }
+    }
+  }
   MouseDownHandler(e) {
     //마우스 클릭 확인
     this.prevMouseX = this.knifex;
@@ -125,7 +176,7 @@ export default class HomeCanvas {
     this.knifes = [];
     this.slicingFruit = false;
   }
-  
+
   MouseMoveHandler(e) {
     //마우스가 클릭 됐을 때 동작 할 부분
     if (this.slicingFruit) {
@@ -133,16 +184,21 @@ export default class HomeCanvas {
       this.prevMouseY = this.knifey;
       this.knifex = e.x;
       this.knifey = e.y;
-      //클릭 발생시 btn들한테 notify (너가 클릭된거니?)
+
       this.startBtn.notifyClick(e.x, e.y);
-      this.exitBtn.notifyClick(e.x, e.y);
       this.settingBtn.notifyClick(e.x, e.y);
+      this.exitBtn.notifyClick(e.x, e.y);
+
       this.knifes.push({
         x: this.knifex,
         y: this.knifey,
         prevMouseX: this.prevMouseX,
         prevMouseY: this.prevMouseY,
       });
+      // for (let fruit of this.fruits) {
+      //   //마우스가 클릭됐다!! 라는것을 과일||폭탄에 알려줘야함
+      //   fruit.notifyMouseMove(e.x, e.y); //마우스의 x y값을 전달해 줌
+      // }
     }
   }
 }

@@ -32,7 +32,7 @@ export default class fruit {
     this.force = -this.speed * 8; //스피드와 반대방향으로 힘 생성??(수직항력)
     this.curForce = this.force; //이건 뭐지? (중력)
     //회전 각도
-    this.degree=5;
+    this.degree = 5;
     //과일 별 스코어
     this.score =
       randfruit == 1
@@ -89,10 +89,9 @@ export default class fruit {
     0.5 => 가속도(힘)
     */
     this.y += this.curForce += 0.3;
-
-    if(this.degree==60)
-      this.degree=0;
-    this.degree+=0.1;
+    if(this.degree ==60)
+      this.degree =0;
+    this.degree +=0.05;
   }
   draw(ctx) {
     //과일 정 중앙 배치를 위한 코드
@@ -105,7 +104,7 @@ export default class fruit {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.degree);
-    ctx.translate(-this.x,-this.y);
+    ctx.translate(-this.x, -this.y);
     //과일 이미지 그리기
     ctx.drawImage(
       this.img,
@@ -118,8 +117,8 @@ export default class fruit {
   //충돌 검사 (canvas에서 마우스 좌표 받아온다)
   notifyMouseMove(mouseX, mouseY) {
     //과일 자르기를 할 때 보내주는 마우스 좌표값
-    this.mouseX= mouseX;
-    this.mouseY=mouseY;
+    this.mouseX = mouseX;
+    this.mouseY = mouseY;
 
     let objX = this.x;
     let objY = this.y;
@@ -135,5 +134,9 @@ export default class fruit {
         this.onCollisionBomb(this); //폭탄 이벤트
       else this.onCollisionFruit(this); //과일 이벤트
     }
+  }
+
+  getFruitInfo() {
+    return this.randfruit;
   }
 }

@@ -1,6 +1,9 @@
 export default class Score {
   constructor() {
-    this.totalScore = 0;
+    this.scoreInfo = {
+      totalScore: 0,
+      cutFruitInfo: [0, 0, 0, 0], //apple peach basaha sandia
+    };
 
     //이미지로드
     this.img = document.querySelector("#number");
@@ -22,11 +25,11 @@ export default class Score {
   }
 
   draw(ctx) {
-    if (this.totalScore < 0) this.totalScore = 0;
+    if (this.scoreInfo.totalScore < 0) this.scoreInfo.totalScore = 0;
 
     //점수 그림으로 출력하기
     // console.log(this.totalScore);
-    let charTotalScore = this.totalScore.toString();
+    let charTotalScore = this.scoreInfo.totalScore.toString();
     this.numbers = charTotalScore.split("");
     this.scoreLength = this.numbers.length;
 
@@ -70,10 +73,23 @@ export default class Score {
   }
 
   notifyOnCollisionFruit(fruit) {
-    this.totalScore += fruit.score;
+    this.scoreInfo.totalScore += fruit.score;
   }
 
   notifyOnCollisionBoom(bomb) {
-    this.totalScore += bomb.score;
+    this.scoreInfo.totalScore += bomb.score;
+  }
+
+  setCutFruitInfo(index) {
+    //과일별, 잘린거 카운트
+    let fruitIndex = index - 1;
+    // console.log(fruitIndex);
+    this.scoreInfo.cutFruitInfo[fruitIndex]++;
+    // console.log(this.scoreInfo.cutFruitInfo);
+  }
+
+  getgameInfo() {
+    //최종 결과 반환을 위한 Score 반환
+    return this.scoreInfo;
   }
 }

@@ -49,8 +49,6 @@ export default class SettingBtn {
     this.settingClicked = null; //콜백함수
     this.cutting =false;
 
-
-
   }
 
 
@@ -72,7 +70,7 @@ export default class SettingBtn {
     this.degree2=0;
     this.degree2-=0.01;
     }
-  }
+    }
 
 
   draw(ctx) {
@@ -107,7 +105,6 @@ export default class SettingBtn {
 
     ctx.restore();
 
-
   }
 
   notifyClick(x,y) {
@@ -118,4 +115,6 @@ export default class SettingBtn {
         this.Cutting =true;
       } 
   }
+
+
 }

@@ -6,7 +6,7 @@ import Score from "../item/score.js";
 import Life from "../item/life.js";
 import PauseButton from "../item/pauseButton.js";
 import Gameover from "../item/GameOver.js";
-import Clock from "../item/clock.js"
+import Clock from "../item/clock.js";
 
 export default class GameCanvas {
   constructor() {
@@ -16,12 +16,7 @@ export default class GameCanvas {
     /** @type {CanvasRenderingContext2D} */
     this.ctx = this.dom.getContext("2d");
 
-
     this.bombEffectImg = document.querySelector("#bombEffect");
-    //========================================사운드 선언
-    this.boomSound = document.querySelector("#boom-sound");
-    this.splatterSound = document.querySelector("#splatter-sound");
-    this.throwSound = document.querySelector("#throw-sound");
 
     //=========================================시계 선언
     this.clock = new Clock();
@@ -35,10 +30,10 @@ export default class GameCanvas {
     this.life = new Life(); // life 객체생성
     this.gameover = null; //gameover 객체 생성 할 변수
     //게임시작시 gamestart
-    this.gamestartImg = document.querySelector('#gamestart'); // 기능이 너무 작아서 별도로 빼지는x
+    this.gamestartImg = document.querySelector("#gamestart"); // 기능이 너무 작아서 별도로 빼지는x
 
     //=========================================캔버스 상태
-    this.frame = 1000 / 60; //게임 프레임
+    this.frame = 1000 / 120; //게임 프레임
 
     this.isgameover = false; // 캔버스의 gameover상태 설정
     this.pause = false; //일시정지
@@ -63,6 +58,9 @@ export default class GameCanvas {
     this.clock.onTimeLimit = this.cbGameoverHandler.bind(this);
     this.life.onCheckgameoverCallbackfn = this.cbGameoverHandler.bind(this);
 
+    this.dom.ontouchend = this.touchendHandler.bind(this);
+    this.dom.ontouchmove = this.touchmoveHandler.bind(this);
+    this.dom.ontouchstart = this.touchstartHandler.bind(this);
     //칼 (Knife 현재 수정중) - 노건들
     this.knifes = [];
     this.knifex = 0;
@@ -73,7 +71,7 @@ export default class GameCanvas {
     //연막
     this.bombEffect = false;
     //연막 초
-    this.count =0;
+    this.count = 0;
     //전역객체 어떤 곳에서든 Canvas의 Height Width 속성을 사용하기 위해 싱글톤 객체로 넘김
     newlec.maincanvas = this.dom;
   }
@@ -92,117 +90,123 @@ export default class GameCanvas {
   }
 
   draw() {
-    console.log(this.isgameover);
+    if(!this.pasue)
+      newlec.sound.onGameSound.pause();
+    if(newlec.sound.isOnGameSound && !this.pause)
+      newlec.sound.onGameSound.play();
+    // console.log(this.isgameover);
     //gamover 되면 일시 정지 돼야 하는것들 넣기
     // (여기 들어가면 게임 오버 될시,그리는것을 멈춤)
-    if(this.bombEffect){
+    if (this.bombEffect) {
       this.ctx.save();
-      let shakeX=Math.random()*10;
-      let shakeY=Math.random()*10;
+      let shakeX = Math.random() * 10;
+      let shakeY = Math.random() * 10;
       this.ctx.translate(shakeX, shakeY);
       this.background.draw(this.ctx); //배경 그리기
       this.ctx.restore();
-      
-    }
-    else
-      this.background.draw(this.ctx); //배경 그리기
+    } else this.background.draw(this.ctx); //배경 그리기
     if (!this.isgameover) {
       this.renderKnife();
 
       //GAMESTART 이미지 3초 띄우기
-      if (!this.isgamestart) { 
-        this.ctx.drawImage(this.gamestartImg, 320, 50, 
-          this.gamestartImg.width*0.5, this.gamestartImg.height*0.5);
-        }
-        setTimeout(() => {
-          this.isgamestart = true; 
-        },2000); 
-        //과일 조각 그리기
-        for (let fruit of this.slicedFruits) {
-          fruit.draw(this.ctx);
-        }
-        //과일 그리기
-        for (let fruit of this.fruits) {
-          fruit.draw(this.ctx);
-        }
-
-        // 일시정지 버튼 띄워주기
-        this.pauseButton.draw(this.ctx);
-        this.clock.draw(this.ctx);
-      }
-       //if (!this.isgameover) 끝
-      //목숨 띄어주기
-      this.life.draw(this.ctx);
-      //점수 띄워주기
-      this.score.draw(this.ctx);
-      // && !this.drawGameoverGUI
-      if(this.bombEffect){
+      if (!this.isgamestart) {
         this.ctx.drawImage(
-          this.bombEffectImg
-          ,0,0
-        )
+          this.gamestartImg,
+          320,
+          50,
+          this.gamestartImg.width * 0.5,
+          this.gamestartImg.height * 0.5
+        );
       }
-      if (this.gameover) {
-        //게임 오버 됐을 때, 목숨 없는거 표현, gameover UI 띄우기
-        this.drawGameoverGUI = true; //다 멈춰 있으니, 얜 한번만 그려주면 되는데 굳이 여러번 그릴 필요 없기 떄문
-        this.gameover.draw(this.ctx); //gameover 띄우기
-        // this.life.draw(this.ctx); //목숨 x 3개로 바꾸기
+      setTimeout(() => {
+        this.isgamestart = true;
+      }, 2000);
+      //폭탄
+
+      //과일 조각 그리기
+      for (let fruit of this.slicedFruits) {
+        fruit.draw(this.ctx);
       }
+      //과일 그리기
+      for (let fruit of this.fruits) {
+        fruit.draw(this.ctx);
+      }
+
+      // 일시정지 버튼 띄워주기
+      this.pauseButton.draw(this.ctx);
+      this.clock.draw(this.ctx);
+    }
+    //if (!this.isgameover) 끝
+    //목숨 띄어주기
+    this.life.draw(this.ctx);
+    //점수 띄워주기
+    this.score.draw(this.ctx);
+    // && !this.drawGameoverGUI
+    if (this.bombEffect) {
+      this.ctx.drawImage(this.bombEffectImg, 0, 0);
+    }
+    if (this.gameover) {
+      // 화면 전환으로 음악 멈춤
+      newlec.sound.isOnGameSound = false;
+
+      //게임 오버 됐을 때, 목숨 없는거 표현, gameover UI 띄우기
+      this.drawGameoverGUI = true; //다 멈춰 있으니, 얜 한번만 그려주면 되는데 굳이 여러번 그릴 필요 없기 떄문
+      this.gameover.draw(this.ctx); //gameover 띄우기
+      // this.life.draw(this.ctx); //목숨 x 3개로 바꾸기
+    }
   }
   update() {
-    if(this.delayUpdate > 0) this.delayUpdate --;
-    
-    if(this.delayUpdate == 0) {
+    if (this.delayUpdate > 0) this.delayUpdate--;
+
+    if (this.delayUpdate == 0) {
       // 게임이 정지되면 업데이트를 멈춘다
       if (this.pause) return;
-      if(this.isgamestart)
-        this.clock.update(this.gameover);
-        //게임오버 됐을때, 아무도 프레임이 바뀔때마다 변화 못하게 만드는 if문
-        this.background.update();
-        if (!this.isgameover) {
-          //과일 조각 업데이트
-          for (let fruit of this.slicedFruits) {
-            fruit.update(this.ctx);
-          }
-          //과일|폭탄 업데이트
-          for (let fruit of this.fruits) {
-            fruit.update(); //다시 움직이고
-          }
-          //과일 || 폭탄 생성기
-          this.fruitsAppearDelay--;
-          if (this.fruitsAppearDelay == 0) {
-            let number = Math.floor(Math.random() * 6);
-            for (let many = 0; many < number; many++) {
-               //소리 연속재생용 초기화 - > 과일 생성
-              this.throwSound.currentTime  = 0;
-              this.throwSound.play();
-
-              let randfruit = Math.floor(Math.random() * 5); // 0~5 까지 랜덤 생성 --> 0 폭탄 1234 과일
-              let fruit = new Fruit(randfruit);
-              fruit.onoutOfScreen = this.onFullFruitoutOfScreen.bind(this);
-              fruit.onCollisionBomb = this.CollisionBombHandler.bind(this);
-              fruit.onCollisionFruit = this.CollisionFruitHandler.bind(this);
-              this.fruits.push(fruit);
-            }
-            this.fruitsAppearDelay = Math.floor(Math.random() * 30 + 20);
-          }
-
-          //목숨 업데이트(추가된거)
-          this.life.update();
+      if (this.isgamestart) this.clock.update(this.gameover);
+      //게임오버 됐을때, 아무도 프레임이 바뀔때마다 변화 못하게 만드는 if문
+      this.background.update();
+      if (!this.isgameover) {
+        //과일 조각 업데이트
+        for (let fruit of this.slicedFruits) {
+          fruit.update(this.ctx);
         }
-        if (this.gameover){
-          this.gameover.update();
-        } 
-        //폭탄 이펙트 검사
-        if(this.bombEffect){
-          this.count++;
-          if(this.count==180){
-            this.bombEffect=false;
-            this.count=0;
+        //과일|폭탄 업데이트
+        for (let fruit of this.fruits) {
+          fruit.update(); //다시 움직이고
+        }
+        //과일 || 폭탄 생성기
+        this.fruitsAppearDelay--;
+        if (this.fruitsAppearDelay == 0) {
+          let number = Math.floor(Math.random() * 6);
+          for (let many = 0; many < number; many++) {
+           //소리 연속재생용 초기화 - > 과일 생성
+           newlec.sound.throwSound.currentTime  = 0;
+           newlec.sound.throwSound.play();
+
+            let randfruit = Math.floor(Math.random() * 5); // 0~5 까지 랜덤 생성 --> 0 폭탄 1234 과일
+            let fruit = new Fruit(randfruit);
+            fruit.onoutOfScreen = this.onFullFruitoutOfScreen.bind(this);
+            fruit.onCollisionBomb = this.CollisionBombHandler.bind(this);
+            fruit.onCollisionFruit = this.CollisionFruitHandler.bind(this);
+            this.fruits.push(fruit);
           }
-        
+          this.fruitsAppearDelay = Math.floor(Math.random() * 30 + 20);
+        }
+
+        //목숨 업데이트(추가된거)
+        this.life.update();
       }
+      if (this.gameover) {
+        this.gameover.update();
       }
+      //폭탄 이펙트 검사
+      if (this.bombEffect) {
+        this.count++;
+        if (this.count == 180) {
+          this.bombEffect = false;
+          this.count = 0;
+        }
+      }
+    }
   }
   //칼 생성기 이벤트
   renderKnife() {
@@ -290,8 +294,8 @@ export default class GameCanvas {
 
   CollisionBombHandler(bomb) {
     //소리 연속재생용 초기화 - 폭탄
-    this.boomSound.currentTime = 0;;
-    this.boomSound.play();
+    newlec.sound.boomSound.currentTime = 0;;
+    newlec.sound.boomSound.play();
 
     //폭탄에게 주는 핸들러 -> 폭탄 지우고 Score바꾸고 Life 바꾸고
 
@@ -308,8 +312,11 @@ export default class GameCanvas {
 
   CollisionFruitHandler(fruit) {
      //소리 연속재생용 초기화 - 과일
-    this.splatterSound.currentTime = 0;
-    this.splatterSound.play();
+    newlec.sound.splatterSound.currentTime = 0;
+    newlec.sound.splatterSound.play();
+
+    this.score.setCutFruitInfo(fruit.getFruitInfo());
+
 
     //과일한테 주는 핸들러 => 과일 지우고 조각난 과일 2개 생성하고 화면 벗어날시 지워주는 이벤트 달아주고
 
@@ -370,7 +377,7 @@ export default class GameCanvas {
 
     //일줄 알았는데, Gameover가 생성 됐는지 안됐는 지에 따라(draw, update) 동작하게 만들면
     //  굳이 visible 속성이 필요가 없어짐
-    console.log("게임 터졌다!!!");
+    // console.log("게임 터졌다!!!");
     this.isgameover = true; //draw update 제어하기 위해
     this.gameover = new Gameover(); //여기서 Gameover 객체 생성함 이전까지 생성안됨
 
@@ -379,13 +386,72 @@ export default class GameCanvas {
   }
 
   cbisClickedYes() {
+    newlec.sound.isOnGameSound = true;
+    newlec.sound.onGameSound.currentTime = 0;
+
     //app.js 보고 gameCanvas 다시 만들라고 명령
     clearTimeout(this.timeoutID);
-    if (this.oncallNewGametoApp) this.oncallNewGametoApp();
+    if (this.oncallNewGametoApp)
+      this.oncallNewGametoApp(this.score.getgameInfo());
   }
   cbisClickedNo() {
     //app.js 보고 gamecanvas 다시 만들고 메인메뉴로 보내라고 명령
     clearTimeout(this.timeoutID);
-    if (this.clickedNoFromContinue) this.clickedNoFromContinue();
+    if (this.clickedNoFromContinue)
+      this.clickedNoFromContinue(this.score.getgameInfo());
   }
+  touchstartHandler(e) {
+    //마우스 클릭 확인
+    console.log("터치가 되었다")
+    if (!this.pause) {
+      this.prevMouseX = this.knifex;
+      this.prevMouseY = this.knifey;
+      this.knifex =  e.touches[0].clientX - e.target.offsetLeft;
+      this.knifey=e.touches[0].clientY - e.target.offsetTop + document.documentElement.scrollTop;
+      this.slicingFruit = true;
+
+      if (this.gameover) {
+        this.gameover.notifyClcikedYesBtn( this.knifex, this.knifey);
+        this.gameover.notifyClcikedNoBtn( this.knifex, this.knifey);
+      }
+  
+      if (!this.gameover) this.pauseButton.onClick = this.togglePause.bind(this);
+      else this.pauseButton.onClick = null;
+      this.pauseButton.notifyOnClick( this.knifex, ethis.knifey);
+
+    }
+
+  }
+  touchendHandler(e) {
+    //마우스 업 확인
+    this.prevMouseX = 0;
+    this.prevMouseY = 0;
+    this.knifes = [];
+    this.slicingFruit = false;
+  }
+
+  touchmoveHandler(e) {
+    //마우스가 클릭 됐을 때 동작 할 부분
+    if (this.slicingFruit) {
+      this.prevMouseX = this.knifex;
+      this.prevMouseY = this.knifey;
+      this.knifex =  e.touches[0].clientX - e.target.offsetLeft;
+      this.knifey=e.touches[0].clientY - e.target.offsetTop + document.documentElement.scrollTop;
+
+      this.knifes.push({
+        x: this.knifex,
+        y: this.knifey,
+        prevMouseX: this.prevMouseX,
+        prevMouseY: this.prevMouseY,
+      });
+      for (let fruit of this.fruits) {
+        //마우스가 클릭됐다!! 라는것을 과일||폭탄에 알려줘야함
+        fruit.notifyMouseMove(this.knifex , this.knifey); //마우스의 x y값을 전달해 줌
+      }
+    }
+  }
+
+
+
+
 }

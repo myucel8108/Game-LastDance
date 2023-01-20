@@ -57,8 +57,8 @@ export default class HomeBtn {
     this.degree+=0.01;
 
     if(this.degree2==60)
-      this.degree2=0;
-      this.degree2-=0.01;
+     this.degree2=0;
+    this.degree2-=0.01;
 
   }
   notifyClick(x,y) {
