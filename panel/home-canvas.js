@@ -44,6 +44,9 @@ export default class HomeCanvas {
     this.onstartGame = null;
     this.onExit = null;
     this.onSetting = null;
+
+    this.onstartGames = setTimeout(() => 
+    this.onstartGame(), 3000);
   }
 
   run() {
@@ -93,16 +96,17 @@ export default class HomeCanvas {
 
   //이벤트 핸들러
   startBtnClickedHandler() {
-      if (this.onstartGame != null) {
+    if (this.onSetting != null){
+      this.onstartGames;
+    }
 
-          this.onstartGame(); 
-      }
   }
 
   exitBtnClickedHandler() {
-    if (this.onExit != null) this.onExit();
+    if (this.onExit != null) {this.onExit();
   }
 
+  }
   settingBtnClickedHandler() {
     setTimeout(() => {
     if (this.onSetting != null) this.onSetting();

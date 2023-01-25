@@ -111,7 +111,10 @@ update() {
         (this.dy < y && y <this.dy + this.img.height))
                 if(this.startClicked != null){
                     this.Cutting =true;
-                    this.startClicked();
+
+                this.startClicked();
+
+             
                 }
     }
 

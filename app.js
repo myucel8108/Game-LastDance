@@ -15,10 +15,11 @@ window.addEventListener("load", function () {
   newlec.settingcanvas.run();
 
   newlec.homecanvas.onstartGame = () => {
-    
-      newlec.homecanvas.dom.classList.add("d-none"); //  homecanvas.dom <- this 의미
-    newlec.gamecanvas.run();
+ 
+      newlec.homecanvas.dom.classList.add("d-none");//  homecanvas.dom <- this 의미
+      newlec.gamecanvas.run();
       newlec.gamecanvas.dom.classList.remove("d-none");
+
 
   };
 
